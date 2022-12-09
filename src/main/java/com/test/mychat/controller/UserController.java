@@ -1,9 +1,13 @@
 package com.test.mychat.controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.test.mychat.annotation.UserLoginToken;
 import com.test.mychat.common.util.ParameterCondition;
 import com.test.mychat.common.util.RedisUtils;
+import com.test.mychat.common.vo.CodeMsg;
 import com.test.mychat.common.vo.WrappedResult;
 import com.test.mychat.pojo.User;
+import com.test.mychat.service.ITockenSevice;
 import com.test.mychat.service.IUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -13,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -29,13 +35,17 @@ public class UserController {
     @Autowired
     private RedisUtils redisUtils;
 
+    @Autowired
+    private ITockenSevice tockenSevice;
+
     @ApiOperation("获取用户列表")
+    @UserLoginToken
     @RequestMapping(path = "/getUserList",method = RequestMethod.POST)
     public WrappedResult getUsers(@RequestBody ParameterCondition<User> parameterCondition){
         try {
             return userService.queryUserListByCondition(parameterCondition);
         } catch (Exception e){
-            return WrappedResult.failedWrappedResult("查询异常");
+            return WrappedResult.failedWrappedResult(e.getMessage());
         }
     }
 
@@ -61,6 +71,33 @@ public class UserController {
             log.info("数据插入缓存" + str);
         }
         return str;
+    }
+
+    /**
+     * 登录验证
+     * @param user
+     * @param response
+     * @return
+     */
+    @RequestMapping(value = "/login" ,method = RequestMethod.GET)
+    public WrappedResult login(User user, HttpServletResponse response) {
+        JSONObject jsonObject = new JSONObject();
+        //获取用户账号密码
+        User userForBase = new User();
+        userForBase.setId(userService.findByUsername(user).getId());
+        userForBase.setUsername(userService.findByUsername(user).getUsername());
+        userForBase.setPassword(userService.findByUsername(user).getPassword());
+        //判断账号或密码是否正确
+        if (!userForBase.getPassword().equals(user.getPassword())) {
+            return WrappedResult.failedWrappedResult(String.valueOf(CodeMsg.USER_OR_PASS_ERROR));
+        } else {
+            String token = tockenSevice.getToken(userForBase);
+            jsonObject.put("token", token);
+            Cookie cookie = new Cookie("token", token);
+            cookie.setPath("/");
+            response.addCookie(cookie);
+            return WrappedResult.successWrapedResult(jsonObject);
+        }
     }
 
 }

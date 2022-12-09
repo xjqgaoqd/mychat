@@ -30,4 +30,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new Exception(e.getMessage());
         }
     }
+
+    @Override
+    public User findByUsername(User user) {
+        User user1 = new User();
+        user1.setUsername(user.getUsername());
+        List<User> users = getBaseMapper().queryUserListByCondition(user);
+        return users.get(0);
+    }
+
+    @Override
+    public User findUserById(String userId) {
+        User user = getBaseMapper().selectById(userId);
+        return user;
+    }
 }

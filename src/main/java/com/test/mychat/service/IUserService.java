@@ -11,4 +11,7 @@ public interface IUserService extends IService<User> {
 
     WrappedResult queryUserListByCondition(ParameterCondition<User> parameterCondition) throws Exception;
 
+    User findByUsername(User user);
+
+    User findUserById(String userId);
 }

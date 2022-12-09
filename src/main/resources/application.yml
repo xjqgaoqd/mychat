@@ -34,7 +34,7 @@ mybatis-plus:
   mapper-locations: classpath:mybatis/mapper/*.xml
 
 server:
-  port: 8066
+  port: 8866
   servlet:
     context-path: /mychat
 

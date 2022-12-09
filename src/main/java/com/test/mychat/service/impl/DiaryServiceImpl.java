@@ -100,7 +100,7 @@ public class DiaryServiceImpl extends ServiceImpl<DiaryMapper, Diary> implements
                     page.put("file",fileList);
                 }
             }
-            pages.stream().map(i -> i.put("writeDate",new SimpleDateFormat("yyyy-MM-dd").format(i.get("write_date")))).collect(Collectors.toList());
+//            pages.stream().map(i -> i.put("writeDate",new SimpleDateFormat("yyyy-MM-dd").format(i.get("write_date")))).collect(Collectors.toList());
 
             PageInfo<Map<String, Object>> pageInfo = new PageInfo<>(pages);
             return WrappedResult.successWrapedResult(pageInfo.getList());
